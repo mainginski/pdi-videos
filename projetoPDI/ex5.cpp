@@ -24,10 +24,14 @@ int main( int argc, char** argv )
   IplImage* frame = 0, *background, *foreground, *framecinza, *cnt_img, *clone;
   CvCapture* capture = 0;
 
-  char cwd[1024];
+  char cwd[1024], rotulos[1000][10];
 
-  CvPoint min_point, max_point, center_point;
-  int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1;
+  rotulo[1] = "rotulo1";
+  rotulo[2] = "rotulo2";
+  rotulo[3] = "rotulo3";
+  rotulo[4] = "rotulo4";
+  CvPoint min_point, max_point, center_point, centroides_frameatual[100], centroides_frameanterior[100];
+  int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1, j;
   //int pix;
 
   // capture = cvCaptureFromCAM(0);
@@ -72,7 +76,7 @@ int main( int argc, char** argv )
 
     cvAbsDiff(framecinza,background,foreground);
     cvThreshold(foreground, foreground,threshold_value,255,threshold_type);
-
+    //cvSub(foreground, foreground, foreground,0);
     cvErode(foreground, foreground, NULL, 2);
     cvDilate(foreground,foreground,NULL, 2);
 
@@ -82,7 +86,7 @@ int main( int argc, char** argv )
 	CvSeq* first_contour = 0;
 
     cvFindContours(
-         foreground,
+         clone,
 		 storage,
 		 &first_contour,
 		 sizeof(CvContour),
@@ -95,12 +99,14 @@ int main( int argc, char** argv )
 	CvScalar red = CV_RGB(190, 5, 190);
 
 	int n=0;
-
+    j = 0;
+    //>centroides_frameanterior = centroides_frameatual; > Criar função para colocar no frameanterior o que tá no frame atual e zerar o frame atual com \0 para poder receber os novos centroides
 	for( CvSeq* c=first_contour; c!=NULL; c=c->h_next ){
         min_x = 1829182;
         min_y = 1290291;
         max_x = -1;
         max_y = -1;
+
 
 		// Recupera a coordenada de cada ponto
         for( int i=0; i<c->total; i++ ){
@@ -125,28 +131,26 @@ int main( int argc, char** argv )
 
             center_point.x = min_point.x+(max_point.x-min_point.x)/2;
             center_point.y = min_point.y+(max_point.y-min_point.y)/2;
+            centroides_frameatual[j] = center_point;
+            //>distancia_euclidiana_entre_todos(centroides_frameanterior, centroides_frameatual[j]);
             cvLine(cnt_img,cvPoint(center_point.x-4, center_point.y), cvPoint(center_point.x+4, center_point.y), CV_RGB(128,128,0),1);
             cvLine(cnt_img,cvPoint(center_point.x, center_point.y-4), cvPoint(center_point.x, center_point.y+4), CV_RGB(128,128,0),1);
-            cvRectangle(cnt_img,min_point,max_point,red,2);
+            cvRectangle(    cnt_img,min_point,max_point,red,2);
+            printf("%d -> %d x %d \n", j, centroides_frameatual[j].x, centroides_frameatual[j].y);
+            j++;
         }
 		//clone2 = cvCloneImage(clone);
 		n++;
         //printf("Min: (%d,%d) | Max: (%d,%d)\n", min_x, min_y, max_x, max_y );
+        cvWaitKey(5);
 	}
 
 
 
 
-
-/*
-    for(int i=0;i<background->height;i++)
-              for(int j=0;j<background->width;j++) {
-               ((uchar*)(background->imageData + background->widthStep*i))[j] = 255;
-    }
-*/
     cvShowImage("in", frame);
-    cvShowImage("fore", clone );
     cvShowImage("clone", cnt_img );
+    cvShowImage("fore", foreground );
     cvCreateTrackbar(" Threshold: ", "fore", &threshold_value, 255, NULL);
     cvCreateTrackbar(" Type: ", "fore", &threshold_type, 4, NULL);
      cvCreateTrackbar("Approximation: ", "clone", &approximation_type, 3, NULL  );
