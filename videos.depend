@@ -1,11 +1,14 @@
 # depslib dependency file v1.0
-1478542601 source:c:\users\gabriel mainginski\desktop\videos\projetopdi\ex5.cpp
+1480014378 source:c:\users\gabriel mainginski\desktop\videos\projetopdi\ex5.cpp
 	<ctype.h>
 	<stdio.h>
 	<stdlib.h>
 	<conio.h>
+	<unistd.h>
 	"cv.h"
+	"cv.hpp"
 	"highgui.h"
+	"highgui.hpp"
 
 1270465930 c:\opencv2.1\include\opencv\cv.h
 	<chdl.h>

@@ -10,17 +10,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
-//#include "cvcam.h"
 #include <unistd.h>
 #include "cv.h"
+#include"cv.hpp"
 #include "highgui.h"
+#include "highgui.hpp"
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 /************************************************************************
  *
  ************************************************************************/
  void videoAnalize( int, void* );
 int main( int argc, char** argv )
 {
-  IplImage* frame = 0, *background, *foreground, *framecinza, *clone, *clone2;
+  IplImage* frame = 0, *background, *foreground, *framecinza, *cnt_img, *clone;
   CvCapture* capture = 0;
 
   char cwd[1024];
@@ -71,20 +74,27 @@ int main( int argc, char** argv )
 
     cvAbsDiff(framecinza,background,foreground);
     cvThreshold(foreground, foreground,threshold_value,255,threshold_type);
-  clone = cvCloneImage(foreground);
 
-CvMemStorage* storage = cvCreateMemStorage();
-	CvSeq* first_contour = NULL;
+    cvErode(foreground, foreground, NULL, 1);
+    cvDilate(foreground,foreground,NULL, 1);
 
-    int Nc = cvFindContours(
-        clone,
+    clone = cvCloneImage(foreground);
+
+    CvMemStorage* storage = cvCreateMemStorage();
+	CvSeq* first_contour = 0;
+
+    cvFindContours(
+         foreground,
 		 storage,
 		 &first_contour,
 		 sizeof(CvContour),
 		 CV_RETR_LIST, approximation_type+1);
-
+	CvSeq* _contours = first_contour;
+    cnt_img = cvCreateImage( cvSize(frame->width,frame->height), 8, 3 );
+    cvZero( cnt_img );
+    cvDrawContours( cnt_img, _contours, CV_RGB(255,0,0), CV_RGB(0,255,0), 4, 1, 8);
 	 //printf( "Total de contornos: %d\n", (int)first_contour.total );
-	CvScalar red = CV_RGB(255, 0, 0);
+	CvScalar red = CV_RGB(190, 5, 190);
 
 	int n=0;
 
@@ -97,43 +107,32 @@ CvMemStorage* storage = cvCreateMemStorage();
 		// Recupera a coordenada de cada ponto
         for( int i=0; i<c->total; i++ ){
 			CvPoint* p = CV_GET_SEQ_ELEM( CvPoint, c, i );
+
+			 //cvApproxPoly(CvSeq, sizeof(CvContour), storage,CV_POLY_APPROX_DP, true);
 			//  printf(" (%d,%d)\n", p->x, p->y );
 //			if(c->h > 100){
-			if(p->x < min_x){
-                min_x = p->x;
-			}
-			if(p->y < min_y){
-                min_y = p->y;
-			}
-			if(p->x > max_x){
-                max_x = p->x;
-			}
-			if(p->y > max_y){
-                max_y = p->y;
-			}
-			//}
+
+            min_x = min(min_x, p->x);
+            min_y = min(min_y, p->y);
+            max_x = max(max_x, p->x);
+            max_y = max(max_y, p->y);
+
 		}
-        if(max_x-min_x < bounding_box && max_y-min_y < bounding_box){
-            min_x = 1829182;
-            min_y = 1290291;
-            max_x = -1;
-            max_y = -1;
-        }else{
+        if(max_x-min_x > bounding_box && max_y-min_y > bounding_box){
             min_point.x = min_x;
             min_point.y = min_y;
             max_point.x = max_x;
             max_point.y = max_y;
+            cvRectangle(frame,min_point,max_point,red,1);
         }
 		//clone2 = cvCloneImage(clone);
 		n++;
-		cvRectangle(frame,min_point,max_point,red);
         //printf("Min: (%d,%d) | Max: (%d,%d)\n", min_x, min_y, max_x, max_y );
 	}
 
 
 
-     cvErode(foreground, foreground, NULL, 1);
-     cvDilate( foreground,foreground,NULL, 2);
+
 
 /*
     for(int i=0;i<background->height;i++)
@@ -142,8 +141,8 @@ CvMemStorage* storage = cvCreateMemStorage();
     }
 */
     cvShowImage("in", frame);
-    cvShowImage("fore", foreground );
-    cvShowImage("clone", clone );
+    cvShowImage("fore", clone );
+    cvShowImage("clone", cnt_img );
     cvCreateTrackbar(" Threshold: ", "fore", &threshold_value, 255, NULL);
     cvCreateTrackbar(" Type: ", "fore", &threshold_type, 4, NULL);
      cvCreateTrackbar("Approximation: ", "clone", &approximation_type, 3, NULL  );
