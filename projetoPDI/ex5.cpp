@@ -12,9 +12,7 @@
 #include <conio.h>
 #include <unistd.h>
 #include "cv.h"
-#include"cv.hpp"
 #include "highgui.h"
-#include "highgui.hpp"
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 /************************************************************************
@@ -28,7 +26,7 @@ int main( int argc, char** argv )
 
   char cwd[1024];
 
-  CvPoint min_point, max_point;
+  CvPoint min_point, max_point, center_point;
   int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1;
   //int pix;
 
@@ -75,8 +73,8 @@ int main( int argc, char** argv )
     cvAbsDiff(framecinza,background,foreground);
     cvThreshold(foreground, foreground,threshold_value,255,threshold_type);
 
-    cvErode(foreground, foreground, NULL, 1);
-    cvDilate(foreground,foreground,NULL, 1);
+    cvErode(foreground, foreground, NULL, 2);
+    cvDilate(foreground,foreground,NULL, 2);
 
     clone = cvCloneImage(foreground);
 
@@ -92,7 +90,7 @@ int main( int argc, char** argv )
 	CvSeq* _contours = first_contour;
     cnt_img = cvCreateImage( cvSize(frame->width,frame->height), 8, 3 );
     cvZero( cnt_img );
-    cvDrawContours( cnt_img, _contours, CV_RGB(255,0,0), CV_RGB(0,255,0), 4, 1, 8);
+    cvDrawContours( cnt_img, _contours, CV_RGB(255,0,0), CV_RGB(0,255,0), 4, 2, 8);
 	 //printf( "Total de contornos: %d\n", (int)first_contour.total );
 	CvScalar red = CV_RGB(190, 5, 190);
 
@@ -118,12 +116,18 @@ int main( int argc, char** argv )
             max_y = max(max_y, p->y);
 
 		}
-        if(max_x-min_x > bounding_box && max_y-min_y > bounding_box){
+        if((max_x-min_x >= bounding_box || max_y-min_y >= bounding_box) && max_x-min_x != frame->width-3 && max_y-min_y != frame->height-3){
+
             min_point.x = min_x;
             min_point.y = min_y;
             max_point.x = max_x;
             max_point.y = max_y;
-            cvRectangle(frame,min_point,max_point,red,1);
+
+            center_point.x = min_point.x+(max_point.x-min_point.x)/2;
+            center_point.y = min_point.y+(max_point.y-min_point.y)/2;
+            cvLine(cnt_img,cvPoint(center_point.x-4, center_point.y), cvPoint(center_point.x+4, center_point.y), CV_RGB(128,128,0),1);
+            cvLine(cnt_img,cvPoint(center_point.x, center_point.y-4), cvPoint(center_point.x, center_point.y+4), CV_RGB(128,128,0),1);
+            cvRectangle(cnt_img,min_point,max_point,red,2);
         }
 		//clone2 = cvCloneImage(clone);
 		n++;
