@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Projeto1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="default">
+				<Option output="videos" prefix_auto="1" extension_auto="1" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="C:/OpenCV2.1/include/opencv" />
+		</Compiler>
+		<Linker>
+			<Add option="../../../../OpenCV2.1/lib/cv210.lib" />
+			<Add option="../../../../OpenCV2.1/lib/cvaux210.lib" />
+			<Add option="../../../../OpenCV2.1/lib/cxcore210.lib" />
+			<Add option="../../../../OpenCV2.1/lib/highgui210.lib" />
+			<Add option="../../../../OpenCV2.1/include/opencv/cv.h" />
+			<Add option="../../../../OpenCV2.1/include/opencv/highgui.h" />
+			<Add directory="C:/OpenCV2.1/lib" />
+		</Linker>
+		<Unit filename="projetoPDI/ex5.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

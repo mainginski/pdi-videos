@@ -1,0 +1,28 @@
+# Project: Projeto1
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+OBJ      = projetoPDI/ex5.o
+LINKOBJ  = projetoPDI/ex5.o
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -L"C:/OpenCV2.1/lib" ../../../../OpenCV2.1/lib/cv210.lib ../../../../OpenCV2.1/lib/cvaux210.lib ../../../../OpenCV2.1/lib/cxcore210.lib ../../../../OpenCV2.1/lib/highgui210.lib ../../../../OpenCV2.1/include/opencv/cv.h ../../../../OpenCV2.1/include/opencv/highgui.h
+INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/OpenCV2.1/include/opencv"
+CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++" -I"C:/OpenCV2.1/include/opencv"
+BIN      = videos.exe
+CXXFLAGS = $(CXXINCS) -Ofast -Wall -std=c99
+CFLAGS   = $(INCS) -Ofast -Wall -std=c99
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+projetoPDI/ex5.o: projetoPDI/ex5.cpp
+	$(CPP) -c projetoPDI/ex5.cpp -o projetoPDI/ex5.o $(CXXFLAGS)
