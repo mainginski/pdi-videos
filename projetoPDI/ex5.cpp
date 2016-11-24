@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <conio.h>
 //#include "cvcam.h"
+#include <unistd.h>
 #include "cv.h"
 #include "highgui.h"
 /************************************************************************
@@ -22,6 +23,8 @@ int main( int argc, char** argv )
   IplImage* frame = 0, *background, *foreground, *framecinza, *clone, *clone2;
   CvCapture* capture = 0;
 
+  char cwd[1024];
+
   CvPoint min_point, max_point;
   int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1;
   //int pix;
@@ -29,7 +32,10 @@ int main( int argc, char** argv )
   // capture = cvCaptureFromCAM(0);
 
   //capture = cvCaptureFromAVI( "c:\\v4.mpeg" );
-  capture = cvCaptureFromFile("C:\\Users\\Gabriel Mainginski\\Desktop\\videos\\v4.avi");
+  getcwd(cwd, 1024);
+  strcat(cwd, "\\v4.avi");
+
+  capture = cvCaptureFromFile(cwd);
 
   if( !capture )
   {
@@ -75,7 +81,7 @@ CvMemStorage* storage = cvCreateMemStorage();
 		 storage,
 		 &first_contour,
 		 sizeof(CvContour),
-		 CV_RETR_LIST, approximation_type );
+		 CV_RETR_LIST, approximation_type+1);
 
 	 //printf( "Total de contornos: %d\n", (int)first_contour.total );
 	CvScalar red = CV_RGB(255, 0, 0);
@@ -140,7 +146,7 @@ CvMemStorage* storage = cvCreateMemStorage();
     cvShowImage("clone", clone );
     cvCreateTrackbar(" Threshold: ", "fore", &threshold_value, 255, NULL);
     cvCreateTrackbar(" Type: ", "fore", &threshold_type, 4, NULL);
-     cvCreateTrackbar("Approximation: ", "clone", &approximation_type, 4, NULL  );
+     cvCreateTrackbar("Approximation: ", "clone", &approximation_type, 3, NULL  );
     cvCreateTrackbar(" BB: ", "in", &bounding_box, 100, NULL);
    if( cvWaitKey(10) >= 0 )
         break;
