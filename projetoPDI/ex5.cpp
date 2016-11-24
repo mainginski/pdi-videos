@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <unistd.h>
+#include <math.h>
 #include "cv.h"
 #include "highgui.h"
 #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -19,6 +20,28 @@
  *
  ************************************************************************/
  void videoAnalize( int, void* );
+
+ void zerarAtual(CvPoint atual[], CvPoint anterior[]){
+     int i;
+    for(i=0;i<100;i++){
+        anterior[i]=atual[i];
+        atual[i].x = 0;
+        atual[i].y = 0;
+    }
+ }
+
+int distancia_euclidiana(CvPoint atual, CvPoint anterior[]){
+    int i;
+    double distancia[100], aux=-1;
+    for(i=0;anterior[i].x>0 && anterior[i].y>0;i++){
+        distancia[i] = sqrt(pow((atual.x-anterior[i].x),2) + pow((atual.y-anterior[i].y),2));
+        if(i>0){
+            aux = min(distancia[i], aux);
+        }
+    }
+    return i;
+}
+
 int main( int argc, char** argv )
 {
   IplImage* frame = 0, *background, *foreground, *framecinza, *cnt_img, *clone;
@@ -26,10 +49,10 @@ int main( int argc, char** argv )
 
   char cwd[1024], rotulos[1000][10];
 
-  rotulo[1] = "rotulo1";
+/*  rotulo[1] = "rotulo1";
   rotulo[2] = "rotulo2";
   rotulo[3] = "rotulo3";
-  rotulo[4] = "rotulo4";
+  rotulo[4] = "rotulo4";*/
   CvPoint min_point, max_point, center_point, centroides_frameatual[100], centroides_frameanterior[100];
   int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1, j;
   //int pix;
@@ -101,6 +124,7 @@ int main( int argc, char** argv )
 	int n=0;
     j = 0;
     //>centroides_frameanterior = centroides_frameatual; > Criar função para colocar no frameanterior o que tá no frame atual e zerar o frame atual com \0 para poder receber os novos centroides
+
 	for( CvSeq* c=first_contour; c!=NULL; c=c->h_next ){
         min_x = 1829182;
         min_y = 1290291;
@@ -132,11 +156,13 @@ int main( int argc, char** argv )
             center_point.x = min_point.x+(max_point.x-min_point.x)/2;
             center_point.y = min_point.y+(max_point.y-min_point.y)/2;
             centroides_frameatual[j] = center_point;
-            //>distancia_euclidiana_entre_todos(centroides_frameanterior, centroides_frameatual[j]);
+           // zerarAtual(centroides_frameatual, centroides_frameanterior);
+            float distancia;
+            distancia = distancia_euclidiana(centroides_frameatual[j], centroides_frameanterior);
             cvLine(cnt_img,cvPoint(center_point.x-4, center_point.y), cvPoint(center_point.x+4, center_point.y), CV_RGB(128,128,0),1);
             cvLine(cnt_img,cvPoint(center_point.x, center_point.y-4), cvPoint(center_point.x, center_point.y+4), CV_RGB(128,128,0),1);
             cvRectangle(    cnt_img,min_point,max_point,red,2);
-            printf("%d -> %d x %d \n", j, centroides_frameatual[j].x, centroides_frameatual[j].y);
+            printf("%d -> %d x %d -> %d\n", j, centroides_frameatual[j].x, centroides_frameatual[j].y, distancia);
             j++;
         }
 		//clone2 = cvCloneImage(clone);
