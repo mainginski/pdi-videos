@@ -1,10 +1,11 @@
 # depslib dependency file v1.0
-1480024468 source:c:\users\gabriel mainginski\desktop\videos\projetopdi\ex5.cpp
+1480075892 source:c:\users\gabriel mainginski\desktop\videos\projetopdi\ex5.cpp
 	<ctype.h>
 	<stdio.h>
 	<stdlib.h>
 	<conio.h>
 	<unistd.h>
+	<math.h>
 	"cv.h"
 	"highgui.h"
 
