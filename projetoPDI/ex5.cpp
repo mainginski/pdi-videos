@@ -23,7 +23,7 @@
 
  void zerarAtual(CvPoint atual[], CvPoint anterior[]){
      int i;
-    for(i=0;i<100;i++){
+     for(i=0;i<100;i++){
         anterior[i]=atual[i];
         atual[i].x = 0;
         atual[i].y = 0;
@@ -31,15 +31,22 @@
  }
 
 int distancia_euclidiana(CvPoint atual, CvPoint anterior[]){
-    int i;
-    double distancia[100], aux=-1;
-    for(i=0;anterior[i].x>0 && anterior[i].y>0;i++){
-        distancia[i] = sqrt(pow((atual.x-anterior[i].x),2) + pow((atual.y-anterior[i].y),2));
-        if(i>0){
-            aux = min(distancia[i], aux);
-        }
+    int i,j;
+    double distancia, aux=10000;
+    for(i=0;i<100;i++){
+        distancia = sqrt(pow((atual.x-anterior[i].x),2) + pow((atual.y-anterior[i].y),2));
+           // aux = min(distancia, aux);
+           if(distancia<aux && anterior[i].x>0 && anterior[i].y>0 && distancia<50){
+                aux = distancia;
+                j=i;
+           }else{
+               continue;
+           }
+
+        //    printf("%.2f // %.2f\n", aux, distancia);
+          //  printf("%d -> %d x %d -> %d x %d\n", i, atual.x, anterior[i].x, atual.y, anterior[i].y);
     }
-    return i;
+    return j;
 }
 
 int main( int argc, char** argv )
@@ -54,7 +61,7 @@ int main( int argc, char** argv )
   rotulo[3] = "rotulo3";
   rotulo[4] = "rotulo4";*/
   CvPoint min_point, max_point, center_point, centroides_frameatual[100], centroides_frameanterior[100];
-  int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1, j;
+  int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1, j, k=0;
   //int pix;
 
   // capture = cvCaptureFromCAM(0);
@@ -124,6 +131,7 @@ int main( int argc, char** argv )
 	int n=0;
     j = 0;
     //>centroides_frameanterior = centroides_frameatual; > Criar função para colocar no frameanterior o que tá no frame atual e zerar o frame atual com \0 para poder receber os novos centroides
+    zerarAtual(centroides_frameatual, centroides_frameanterior);
 
 	for( CvSeq* c=first_contour; c!=NULL; c=c->h_next ){
         min_x = 1829182;
@@ -155,20 +163,30 @@ int main( int argc, char** argv )
 
             center_point.x = min_point.x+(max_point.x-min_point.x)/2;
             center_point.y = min_point.y+(max_point.y-min_point.y)/2;
-            centroides_frameatual[j] = center_point;
-           // zerarAtual(centroides_frameatual, centroides_frameanterior);
-            float distancia;
-            distancia = distancia_euclidiana(centroides_frameatual[j], centroides_frameanterior);
+
+            int distancia;
+            char buff[5];
+
+            distancia = distancia_euclidiana(center_point, centroides_frameanterior);
+            itoa(distancia,buff,5);
+            if(distancia>0){
+                 centroides_frameatual[distancia] = center_point;
+            }else {
+                 centroides_frameatual[j] = center_point;
+            }
+            CvFont font;
+            cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 1, 1);
+            cvPutText(cnt_img, buff, center_point, &font, CV_RGB(255,255,255));
             cvLine(cnt_img,cvPoint(center_point.x-4, center_point.y), cvPoint(center_point.x+4, center_point.y), CV_RGB(128,128,0),1);
             cvLine(cnt_img,cvPoint(center_point.x, center_point.y-4), cvPoint(center_point.x, center_point.y+4), CV_RGB(128,128,0),1);
-            cvRectangle(    cnt_img,min_point,max_point,red,2);
-            printf("%d -> %d x %d -> %d\n", j, centroides_frameatual[j].x, centroides_frameatual[j].y, distancia);
+            cvRectangle(cnt_img,min_point,max_point,red,2);
+           // printf("%d -> %d x %d -> %d\n", j, centroides_frameatual[j].x, centroides_frameatual[j].y, distancia);
             j++;
         }
 		//clone2 = cvCloneImage(clone);
 		n++;
         //printf("Min: (%d,%d) | Max: (%d,%d)\n", min_x, min_y, max_x, max_y );
-        cvWaitKey(5);
+     //   cvWaitKey(10);
 	}
 
 
@@ -189,3 +207,4 @@ int main( int argc, char** argv )
   system("pause");
   return 0;
 }
+
