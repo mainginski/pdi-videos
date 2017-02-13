@@ -19,14 +19,23 @@
 /************************************************************************
  *
  ************************************************************************/
+ int usados[1500], contagem = 0;
+
  void videoAnalize( int, void* );
 
  void zerarAtual(CvPoint atual[], CvPoint anterior[]){
      int i;
+     contagem=0;
      for(i=0;i<100;i++){
         anterior[i]=atual[i];
         atual[i].x = 0;
         atual[i].y = 0;
+    }
+ }
+ void zerarAnterior(CvPoint anterior[]){
+    for(int i=0;i<100;i++){
+        anterior[i].x = 0;
+        anterior[i].y = 0;
     }
  }
 
@@ -35,34 +44,34 @@ int distancia_euclidiana(CvPoint atual, CvPoint anterior[]){
     double distancia, aux=10000;
     for(i=0;i<100;i++){
         distancia = sqrt(pow((atual.x-anterior[i].x),2) + pow((atual.y-anterior[i].y),2));
-           // aux = min(distancia, aux);
-           if(distancia<aux && anterior[i].x>0 && anterior[i].y>0 && distancia<50){
+        //aux = min(distancia, aux);
+           if(distancia<aux && anterior[i].x>0 && anterior[i].y>0 /*&& distancia<50*/){
                 aux = distancia;
                 j=i;
-           }else{
-               continue;
-           }
+            }
+
 
         //    printf("%.2f // %.2f\n", aux, distancia);
-          //  printf("%d -> %d x %d -> %d x %d\n", i, atual.x, anterior[i].x, atual.y, anterior[i].y);
+        //printf("%d -> %d x %d -> %d x %d\n", i, atual.x, anterior[i].x, atual.y, anterior[i].y);
     }
     return j;
 }
 
-int main( int argc, char** argv )
+int main( )
 {
+
   IplImage* frame = 0, *background, *foreground, *framecinza, *cnt_img, *clone;
   CvCapture* capture = 0;
 
-  char cwd[1024], rotulos[1000][10];
+  char cwd[1024];
 
 /*  rotulo[1] = "rotulo1";
   rotulo[2] = "rotulo2";
   rotulo[3] = "rotulo3";
   rotulo[4] = "rotulo4";*/
   CvPoint min_point, max_point, center_point, centroides_frameatual[100], centroides_frameanterior[100];
-  int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1, j, k=0;
-  //int pix;
+  int max_x, max_y, min_x, min_y, threshold_value = 70, threshold_type = 1, bounding_box = 30, approximation_type = 1, j;
+  //int pix;hh
 
   // capture = cvCaptureFromCAM(0);
 
@@ -74,8 +83,8 @@ int main( int argc, char** argv )
 
   if( !capture )
   {
-    fprintf(stderr,"Could not initialize capturing...\n");
-     system("pause");
+    printf("Could not initialize capturing...\n");
+    // system("pause");
   }
 
   frame = cvQueryFrame( capture );
@@ -91,7 +100,7 @@ int main( int argc, char** argv )
 
 
 
-  cvNamedWindow( "in", 1);
+  cvNamedWindow( "in",1);
   cvNamedWindow( "fore", 1);
    cvNamedWindow( "clone", 1);
 
@@ -139,6 +148,11 @@ int main( int argc, char** argv )
         max_x = -1;
         max_y = -1;
 
+        /*if(c->total < 10){
+            contagem++;
+        }else{
+            contagem = 0;
+        }*/
 
 		// Recupera a coordenada de cada ponto
         for( int i=0; i<c->total; i++ ){
@@ -155,21 +169,22 @@ int main( int argc, char** argv )
 
 		}
         if((max_x-min_x >= bounding_box || max_y-min_y >= bounding_box) && max_x-min_x != frame->width-3 && max_y-min_y != frame->height-3){
-
+            contagem++;
             min_point.x = min_x;
             min_point.y = min_y;
             max_point.x = max_x;
             max_point.y = max_y;
 
-            center_point.x = min_point.x+(max_point.x-min_point.x)/2;
-            center_point.y = min_point.y+(max_point.y-min_point.y)/2;
-
+            center_point.x = (int)(min_point.x+(max_point.x-min_point.x)/2);
+            center_point.y = (int)(min_point.y+(max_point.y-min_point.y)/2);
             int distancia;
             char buff[5];
 
-            distancia = distancia_euclidiana(center_point, centroides_frameanterior);
-            itoa(distancia,buff,5);
+
+            distancia = distancia_euclidiana(cvPoint(center_point.x, center_point.y), centroides_frameanterior);
+            itoa(contagem, buff,5);
             if(distancia>0){
+                    j++;
                  centroides_frameatual[distancia] = center_point;
             }else {
                  centroides_frameatual[j] = center_point;
@@ -177,17 +192,23 @@ int main( int argc, char** argv )
             CvFont font;
             cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 1, 1);
             cvPutText(cnt_img, buff, center_point, &font, CV_RGB(255,255,255));
-            cvLine(cnt_img,cvPoint(center_point.x-4, center_point.y), cvPoint(center_point.x+4, center_point.y), CV_RGB(128,128,0),1);
-            cvLine(cnt_img,cvPoint(center_point.x, center_point.y-4), cvPoint(center_point.x, center_point.y+4), CV_RGB(128,128,0),1);
-            cvRectangle(cnt_img,min_point,max_point,red,2);
-           // printf("%d -> %d x %d -> %d\n", j, centroides_frameatual[j].x, centroides_frameatual[j].y, distancia);
-            j++;
+            cvLine(frame,cvPoint(center_point.x-4, center_point.y), cvPoint(center_point.x+4, center_point.y), CV_RGB(128,128,0),1);
+            cvLine(frame,cvPoint(center_point.x, center_point.y-4), cvPoint(center_point.x, center_point.y+4), CV_RGB(128,128,0),1);
+            cvRectangle(frame,min_point,max_point,red,2);
+           // printf("%d -> %d  x %d -> %d\n", j, centroides_frameatual[j].x, centroides_frameatual[j].y, distancia);
+           j++;
         }
+        //printf("%d %d\n", center_point.x, center_point.y);
+        /*if(contagem == 10){
+            zerarAnterior(centroides_frameanterior);
+            j++;
+        }*/
 		//clone2 = cvCloneImage(clone);
 		n++;
         //printf("Min: (%d,%d) | Max: (%d,%d)\n", min_x, min_y, max_x, max_y );
      //   cvWaitKey(10);
 	}
+
 
 
 
@@ -203,8 +224,9 @@ int main( int argc, char** argv )
         break;
   }
   cvReleaseCapture( &capture );
-  cvDestroyAllWindows();
-  system("pause");
+  //cvDestroyAllWindows();
+  //system("pause");
   return 0;
 }
+
 
